@@ -1,0 +1,141 @@
+@import './spotlight.css';
+
+/* 防止内容闪烁 */
+* {
+  text-rendering: optimizeSpeed;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
+    Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+    'Noto Color Emoji';
+  overflow-x: hidden;
+  height: 100vh;
+  overflow: hidden;
+}
+
+html {
+  overflow: hidden;
+  height: 100%;
+}
+
+#root {
+  min-height: 100vh;
+  max-height: 100vh;
+  overflow: hidden;
+}
+
+/* Add global styles here */
+
+/* Hide scrollbars but keep scrolling functionality */
+::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  background: transparent;
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+}
+
+/* For when we need more specific scrollbar hiding */
+.hide-scrollbar {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+/* Glass effect - optimized for performance */
+.glass-effect {
+  background: rgba(0, 0, 0, 0.2) !important;
+  backdrop-filter: blur(10px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  will-change: transform !important;
+  transform: translateZ(0) !important;
+  position: relative !important;
+  contain: layout style !important;
+}
+
+/* 防止布局抖动的关键 */
+.ant-layout, 
+.ant-layout-content,
+.ant-layout-header,
+.ant-card,
+.ant-card-body {
+  position: relative !important;
+  transform: translateZ(0) !important;
+  contain: layout style paint !important;
+  will-change: auto !important;
+}
+
+/* 固定布局容器大小 */
+.ant-layout-content {
+  height: calc(100vh - 64px) !important;
+  contain: layout size !important;
+}
+
+/* 确保在加载时保持固定尺寸 */
+.ant-card {
+  height: 100% !important;
+  transition: none !important;
+}
+
+/* 移除可能导致元素布局跳跃的样式 */
+* {
+  transition: none !important;
+}
+
+/* 仅对需要过渡效果的元素单独定义 */
+.spotlight-background::before,
+.spotlight-background::after,
+.spotlight-background .spotlight-extra {
+  transition: transform 0.5s ease-in-out !important;
+}
+
+/* 防止元素闪烁 */
+.ant-list-item, 
+.ant-list-items,
+.ant-list {
+  contain: layout style;
+  transform: translateZ(0);
+  display: block;
+  width: 100%;
+}
+
+/* 防止抖动 */
+.ant-list-item, 
+.ant-card-body {
+  position: static !important;
+  contain: layout style !important;
+}
+
+/* 防止消息列表闪烁 */
+.ant-list-item-meta,
+.ant-list-item-meta-content,
+.ant-list-item-meta-title,
+.ant-list-item-meta-description {
+  transform: translateZ(0);
+  contain: layout style;
+}
+
+/* Prevent flex container from expanding beyond viewport */
+.ant-flex {
+  max-height: calc(100vh - 88px);
+  overflow: hidden;
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Prevent layout shifts */
+.ant-layout-content {
+  contain: layout size;
+} 

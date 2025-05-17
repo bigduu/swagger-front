@@ -1,0 +1,145 @@
+/* 聚光灯背景效果 */
+.spotlight-background {
+  position: relative;
+  overflow: hidden;
+  background-color: rgb(13, 18, 33);
+  contain: layout size;
+  transform: translateZ(0);
+}
+
+/* 主聚光灯效果 */
+.spotlight-background::before,
+.spotlight-background::after {
+  content: '';
+  position: absolute;
+  width: 40vw;
+  height: 40vw;
+  border-radius: 50%;
+  filter: blur(50px);
+  opacity: 0.4;
+  animation-play-state: paused; /* 暂停动画，避免重绘 */
+  z-index: 0;
+  will-change: transform;
+  transform: translateZ(0);
+  animation-name: spotlight-move;
+  animation-duration: 15s;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+  animation-timing-function: ease-in-out;
+  pointer-events: none;
+}
+
+/* 启用动画 - 只有在DOM稳定后才启用 */
+.spotlight-ready .spotlight-background::before,
+.spotlight-ready .spotlight-background::after,
+.spotlight-ready .spotlight-background .spotlight-extra {
+  animation-play-state: running;
+}
+
+.spotlight-background::before {
+  background: radial-gradient(circle, rgba(62, 62, 255, 0.8) 0%, rgba(42, 42, 114, 0.3) 70%, transparent 100%);
+  top: -10%;
+  left: 30%;
+  animation-delay: 0s;
+}
+
+.spotlight-background::after {
+  background: radial-gradient(circle, rgba(0, 180, 216, 0.8) 0%, rgba(0, 98, 118, 0.3) 70%, transparent 100%);
+  bottom: -5%;
+  right: 20%;
+  animation-delay: -7s;
+}
+
+/* 添加额外的聚光灯 */
+.spotlight-background .spotlight-extra {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(30px);
+  opacity: 0.3;
+  pointer-events: none;
+  z-index: 0;
+  will-change: transform;
+  transform: translateZ(0);
+  animation-play-state: paused; /* 暂停动画，避免重绘 */
+}
+
+.spotlight-background .spotlight-1 {
+  background: radial-gradient(circle, rgba(255, 100, 150, 0.7) 0%, rgba(128, 30, 60, 0.3) 70%, transparent 100%);
+  width: 25vw;
+  height: 25vw;
+  top: 60%;
+  left: 10%;
+  animation: spotlight-float 10s infinite alternate-reverse ease-in-out;
+}
+
+.spotlight-background .spotlight-2 {
+  background: radial-gradient(circle, rgba(180, 130, 255, 0.7) 0%, rgba(90, 60, 150, 0.3) 70%, transparent 100%);
+  width: 20vw;
+  height: 20vw;
+  top: 20%;
+  left: 70%;
+  animation: spotlight-float 12s infinite alternate ease-in-out -5s;
+}
+
+.spotlight-background .spotlight-3 {
+  background: radial-gradient(circle, rgba(30, 210, 160, 0.7) 0%, rgba(15, 100, 80, 0.3) 70%, transparent 100%);
+  width: 15vw;
+  height: 15vw;
+  top: 70%;
+  left: 60%;
+  animation: spotlight-float 18s infinite alternate-reverse ease-in-out -12s;
+}
+
+@keyframes spotlight-move {
+  0% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(-10%, 5%);
+  }
+  50% {
+    transform: translate(5%, -5%);
+  }
+  75% {
+    transform: translate(-5%, -10%);
+  }
+  100% {
+    transform: translate(10%, 10%);
+  }
+}
+
+@keyframes spotlight-float {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  20% {
+    transform: translate(5%, 3%) scale(1.05);
+  }
+  40% {
+    transform: translate(-3%, 5%) scale(0.95);
+  }
+  60% {
+    transform: translate(7%, -3%) scale(1.1);
+  }
+  80% {
+    transform: translate(-5%, -5%) scale(0.9);
+  }
+  100% {
+    transform: translate(3%, 7%) scale(1);
+  }
+}
+
+/* 毛玻璃效果 - 优化性能 */
+.glass-effect {
+  background: rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2) !important;
+  position: relative !important;
+  z-index: 1 !important;
+  transform: translateZ(0) !important;
+  will-change: transform !important;
+  isolation: isolate !important;
+  contain: layout style paint !important;
+} 
