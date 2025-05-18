@@ -45,30 +45,7 @@ interface ChatMessage {
 
 const STORAGE_KEY = "chat_history";
 
-// Example markdown content for better demo
-const EXAMPLE_RESPONSE = `
-# Response Title
-
-Here's the information you requested:
-
-## Section 1
-- First bullet point
-- Second bullet point
-- Third bullet point
-
-## Code Example
-\`\`\`javascript
-function exampleCode() {
-  const greeting = "Hello, world!";
-  console.log(greeting);
-  return greeting;
-}
-\`\`\`
-
-> This is a blockquote with important information.
-
-Visit [Example Link](https://example.com) for more details.
-`;
+// ChatPanel implementation
 
 const ChatPanel: React.FC<ChatPanelProps> = ({ style, className }) => {
   const { token } = useToken();
@@ -172,7 +149,7 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ style, className }) => {
   };
 
   // 处理发送消息
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (!inputValue.trim()) return;
 
     const userMessage: ChatMessage = {
@@ -186,35 +163,87 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ style, className }) => {
     setInputValue("");
     setIsLoading(true);
 
-    // Simulate API call with requestAnimationFrame for更平滑的UI更新
-    requestAnimationFrame(() => {
-      setTimeout(() => {
-        // Sample file content
-        const fileContent = "Sample file content";
+    try {
+      // Import API client
+      const apiClient = (await import("../services/apiClient")).default;
 
-        // Create blob URL
-        const blob = new Blob([fileContent], { type: "text/plain" });
-        const downloadUrl = URL.createObjectURL(blob);
+      // Call the completion API
+      const completionResponse = await apiClient.getCompletion([
+        {
+          role: "user",
+          content: userMessage.content,
+        },
+      ]);
 
-        // Store URL reference
-        const fileName = "response.txt";
-        blobUrlsRef.current[fileName] = downloadUrl;
+      // Get assistant's response
+      const assistantContent =
+        completionResponse.choices[0]?.message.content ||
+        "Sorry, I couldn't generate a response.";
 
-        // Add system response to history with file download link
-        const systemResponse: ChatMessage = {
-          content: EXAMPLE_RESPONSE,
-          timestamp: new Date().toISOString(),
-          isUser: false,
-          fileUrl: downloadUrl,
-          fileName: fileName,
-          fileContent: fileContent,
-        };
+      // Process code execution if applicable
+      let fileContent = "";
+      let fileName = "";
+      let fileUrl = "";
 
-        addMessageToHistory(systemResponse);
-        setIsLoading(false);
-        message.success("Message processed and file generated!");
-      }, 2000);
-    });
+      // Extract code blocks and execute if present
+      const { ApiClient } = await import("../services/apiClient");
+      const codeBlocks = ApiClient.extractCodeBlocks(assistantContent);
+      if (codeBlocks.length > 0) {
+        // Execute the first code block
+        try {
+          const executionResult = await apiClient.executeCode(codeBlocks[0]);
+
+          // Create a file with the execution result
+          fileName = "execution_result.txt";
+          fileContent =
+            executionResult.result ||
+            executionResult.error ||
+            "No result returned";
+
+          // Create a blob URL for the file content
+          const blob = new Blob([fileContent], { type: "text/plain" });
+          fileUrl = URL.createObjectURL(blob);
+
+          // Store URL reference for cleanup
+          blobUrlsRef.current[fileName] = fileUrl;
+        } catch (error) {
+          console.error("Error executing code:", error);
+          message.error("Failed to execute code");
+        }
+      }
+
+      // Add system response to history
+      const systemResponse: ChatMessage = {
+        content: assistantContent,
+        timestamp: new Date().toISOString(),
+        isUser: false,
+        ...(fileUrl && fileName
+          ? {
+              fileUrl,
+              fileName,
+              fileContent,
+            }
+          : {}),
+      };
+
+      addMessageToHistory(systemResponse);
+      message.success("Response received!");
+    } catch (error) {
+      console.error("Error processing message:", error);
+      message.error("Failed to process message");
+
+      // Add error message to chat
+      const errorResponse: ChatMessage = {
+        content:
+          "Sorry, there was an error processing your request. Please try again later.",
+        timestamp: new Date().toISOString(),
+        isUser: false,
+      };
+
+      addMessageToHistory(errorResponse);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const clearHistory = () => {
