@@ -17,15 +17,10 @@ interface CompletionRequest {
 }
 
 interface CompletionResponse {
-  id: string;
-  object: string;
-  created: number;
-  model: string;
-  choices: {
-    index: number;
-    message: OpenAIMessage;
-    finish_reason: string;
-  }[];
+  message: {
+    role: string;
+    content: string;
+  };
 }
 
 interface CodeExecutionRequest {

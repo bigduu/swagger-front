@@ -5,10 +5,13 @@ import {
   RobotOutlined,
   DownloadOutlined,
   FileTextOutlined,
+  CodeOutlined,
+  PlayCircleOutlined,
 } from "@ant-design/icons";
 import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
+import apiClient from "../services/apiClient";
 
 const { Text } = Typography;
 const { useToken } = theme;
@@ -40,6 +43,30 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
   // User and system message colors - Brightened user color
   const userColor = "#00b8ff";
   const systemColor = token.colorSuccess;
+
+  // Function to handle code download
+  const handleCodeDownload = (code: string) => {
+    const blob = new Blob([code], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `code-${new Date().getTime()}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  // Function to handle code execution
+  const handleCodeExecution = async (code: string) => {
+    try {
+      const result = await apiClient.executeCode(code);
+      console.log("Execution result:", result);
+      // You may want to add a callback to handle the result
+    } catch (error) {
+      console.error("Error executing code:", error);
+    }
+  };
 
   return (
     <div
@@ -130,15 +157,53 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
           components={{
             code: ({ node, inline, className, children, ...props }: any) => {
               const match = /language-(\w+)/.exec(className || "");
+              const codeContent = String(children).replace(/\n$/, "");
+
               return !inline && match ? (
-                <SyntaxHighlighter
-                  style={vscDarkPlus as any}
-                  language={match[1]}
-                  PreTag="div"
-                  {...props}
-                >
-                  {String(children).replace(/\n$/, "")}
-                </SyntaxHighlighter>
+                <div style={{ position: "relative" }}>
+                  <SyntaxHighlighter
+                    style={vscDarkPlus as any}
+                    language={match[1]}
+                    PreTag="div"
+                    {...props}
+                  >
+                    {codeContent}
+                  </SyntaxHighlighter>
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: "8px",
+                      right: "8px",
+                      display: "flex",
+                      gap: "4px",
+                    }}
+                  >
+                    <Tooltip title="Download code">
+                      <Button
+                        type="primary"
+                        size="small"
+                        icon={<DownloadOutlined />}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleCodeDownload(codeContent);
+                        }}
+                        style={{ opacity: 0.8 }}
+                      />
+                    </Tooltip>
+                    <Tooltip title="Execute code">
+                      <Button
+                        type="primary"
+                        size="small"
+                        icon={<PlayCircleOutlined />}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleCodeExecution(codeContent);
+                        }}
+                        style={{ opacity: 0.8 }}
+                      />
+                    </Tooltip>
+                  </div>
+                </div>
               ) : (
                 <code
                   className={className}
